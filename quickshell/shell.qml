@@ -5,7 +5,7 @@ import Quickshell.Io
 import Quickshell.Services.Notifications
 import Quickshell.Services.UPower
 
-// MacBook-style dynamic notch for Hyprland.
+// Dynamic notch for Hyprland.
 PanelWindow {
     id: notchWindow
 
@@ -49,12 +49,7 @@ PanelWindow {
     implicitHeight: panelHeight
     color: "transparent"
 
-    // Always reserve exactly closedHeight of screen space and leave it
-    // there, no matter what the notch is showing. panelOpen and infoShowing
-    // deliberately don't factor in: those states are overlays that draw on
-    // top of windows instead of displacing them. Toggling the exclusion
-    // zone for them was shoving tiled windows down and back up every time
-    // the notch changed size (workspace switches, notifications, the panel).
+    // Just felt COOL
     exclusionMode: ExclusionMode.Normal
     exclusiveZone: closedHeight
 
@@ -183,22 +178,9 @@ PanelWindow {
             Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
             Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         }
-
-        // This deliberately is not a Flickable: the control centre is a
-        // fixed, static panel with no accidental wheel or touch scrolling.
+        
         Item {
             id: panelContent
-            // Fixed to the panel's final size rather than anchors.fill:
-            // parent. "parent" here is island, which is still animating
-            // (closedWidth -> panelWidth over animationDuration) for the
-            // whole time the panel is opening. Anything sized as a
-            // fraction of panelContent's width had a moving target for
-            // that entire animation - the brightness/volume sliders each
-            // also layer their own 150ms Behavior on top of that moving
-            // target, which is what produced the "auto-slide" right after
-            // opening. island's clip: true still reveals this fixed-size
-            // content progressively as it grows, so the open animation
-            // looks identical; only the sliders stop moving on their own.
             anchors.top: parent.top
             anchors.topMargin: 18
             anchors.horizontalCenter: parent.horizontalCenter
