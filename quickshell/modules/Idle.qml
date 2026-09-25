@@ -16,19 +16,23 @@ Item {
 
     required property bool idle
 
+    // Shared design tokens - see modules/Theme.qml.
+    Theme { id: theme }
+
     SystemClock { id: clock }
 
     Text {
         anchors.centerIn: parent
         text: Qt.formatDateTime(clock.date, "h:mm")
-        color: "#f5f5f7"
+        color: theme.textPrimary
         font.pixelSize: 13
         font.weight: Font.DemiBold
+        font.family: theme.fontFamily
 
         opacity: root.idle ? 1 : 0
         scale: root.idle ? 1 : 0.88
 
-        Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: theme.durationBase; easing.type: Easing.OutCubic } }
+        Behavior on scale { NumberAnimation { duration: theme.durationBase; easing.type: Easing.OutCubic } }
     }
 }

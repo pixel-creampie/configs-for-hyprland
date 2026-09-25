@@ -11,17 +11,12 @@ import "modules" as Modules
 PanelWindow {
     id: notchWindow
 
-    // Shared design tokens (colors, corner radii, spacing, timing) - see
-    // modules/Theme.qml for why this is a plain instantiated type rather
-    // than a singleton.
-    Modules.Theme { id: theme }
-
     property int closedWidth: 118
     property int closedHeight: 34
     property int infoWidth: 250
     property int infoHeight: 68
-    property int playerWidth: 340
-    property int playerHeight: 196
+    property int playerWidth: 320
+    property int playerHeight: 134
     property int notifToastWidth: 320
     property int notifToastHeight: 96
     // The left-click slot shares playerWidth for both contents, but the
@@ -162,23 +157,6 @@ PanelWindow {
     Timer { id: workspaceTimer; interval: 1400; repeat: false }
     Timer { id: osdTimer; interval: 1600; repeat: false }
     Timer { id: notifToastTimer; interval: 4200; repeat: false }
-
-    // Dismisses panelOpen/playerOpen when the user clicks anywhere outside
-    // the notch. The window's own input mask is deliberately restricted to
-    // just the island (see "mask" above) so normal clicks pass through to
-    // other apps - which means the window itself can never see an outside
-    // click to react to. HyprlandFocusGrab operates at the compositor
-    // level instead, independent of that mask, so it can still detect one.
-    // OSD and the notification toast aren't included: they already
-    // auto-dismiss on their own timers and were never "stuck open".
-    HyprlandFocusGrab {
-        id: focusGrab
-        windows: [notchWindow]
-        onCleared: {
-            notchWindow.panelOpen = false
-            notchWindow.playerOpen = false
-        }
-    }
 
     Connections {
         target: Hyprland
@@ -357,14 +335,9 @@ PanelWindow {
             antialiasing: true
             onPaint: {
                 const ctx = getContext("2d")
-                const corner = Math.min(
-                    panelOpen ? theme.radiusPanel
-                    : playerOpen ? theme.radiusPlayer
-                    : (osdShowing || notifToastShowing) ? theme.radiusOsd
-                    : theme.radiusIdle,
-                    height / 2)
+                const corner = Math.min(panelOpen ? 26 : playerOpen ? 20 : osdShowing ? 18 : notifToastShowing ? 18 : 15, height / 2)
                 ctx.reset()
-                ctx.fillStyle = theme.bgAmoled
+                ctx.fillStyle = "#ff050505"
                 ctx.beginPath()
                 ctx.moveTo(0, 0)
                 ctx.lineTo(width, 0)
@@ -397,12 +370,6 @@ PanelWindow {
                     notchWindow.playerOpen = !notchWindow.playerOpen
                     if (notchWindow.playerOpen) notchWindow.panelOpen = false
                 }
-                // Keep the outside-click grab in sync with whatever just
-                // changed. Imperative, not a binding on "active" -
-                // Quickshell sets that property to false itself once the
-                // grab clears, which would silently disconnect a
-                // persistent binding the next time this fires.
-                focusGrab.active = notchWindow.panelOpen || notchWindow.playerOpen
             }
         }
 
@@ -431,7 +398,7 @@ PanelWindow {
                     width: 3
                     height: Math.max(3, Math.min(18, Math.round((modelData / 100) * 18)))
                     radius: 1.5
-                    color: theme.textPrimary
+                    color: "#f5f5f7"
                     anchors.verticalCenter: parent.verticalCenter
 
                     Behavior on height {
@@ -445,10 +412,9 @@ PanelWindow {
         Text {
             anchors.centerIn: parent
             text: Hyprland.focusedWorkspace ? "Workspace " + Hyprland.focusedWorkspace.id : "Workspace"
-            color: theme.textPrimary
+            color: "#f5f5f7"
             font.pixelSize: 18
             font.weight: Font.DemiBold
-            font.family: theme.fontFamily
             opacity: !notchWindow.panelOpen && !notchWindow.playerOpen && !notchWindow.osdShowing && !notchWindow.notifToastShowing && notchWindow.infoShowing ? 1 : 0
             scale: !notchWindow.panelOpen && !notchWindow.playerOpen && !notchWindow.osdShowing && !notchWindow.notifToastShowing && notchWindow.infoShowing ? 1 : 0.9
             Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
@@ -491,7 +457,6 @@ PanelWindow {
             scale: notchWindow.playerOpen && notchWindow.hasActiveMedia ? 1 : 0.975
             transformOrigin: Item.Top
             active: notchWindow.playerOpen && notchWindow.hasActiveMedia
-            cornerRadius: theme.radiusPlayer
             Behavior on opacity { NumberAnimation { duration: 190; easing.type: Easing.OutCubic } }
             Behavior on scale { NumberAnimation { duration: 260; easing.type: Easing.OutQuint } }
         }
